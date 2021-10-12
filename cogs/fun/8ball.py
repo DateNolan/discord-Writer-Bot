@@ -1,26 +1,26 @@
-import random
-import lib
-import discord
+import discord, lib, random
 from discord.ext import commands
-from structures.wrapper import CommandWrapper
+from discord_slash import cog_ext, SlashContext
 from structures.guild import Guild
 
-
-class EightBall(commands.Cog, CommandWrapper):
+class EightBall(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self._arguments = [
-            {
-                'key': 'question',
-                'prompt': '8ball:arguments',
-                'required': True
-            }
-        ]
 
     @commands.command(name="8ball")
     @commands.guild_only()
-    async def _8ball(self, context, question=None):
+    async def old_8ball(self, context):
+        """
+        Old 8ball command.
+        @param context:
+        @return:
+        """
+        await context.send('This command has been migrated to use a Slash Command. More info: https://github.com/cwarwicker/discord-Writer-Bot/wiki/Slash-Commands')
+
+    @commands.guild_only()
+    @cog_ext.cog_slash(name="8ball", description="Ask the magic 8ball a question")
+    async def _8ball(self, context: SlashContext, question):
         """
         Ask the magic 8-ball a question. Your question will be routed to a text-processing AI in order to properly analyze the content of the question and provide a meaningful answer.
 
@@ -30,14 +30,6 @@ class EightBall(commands.Cog, CommandWrapper):
             return await context.send(lib.get_string('err:disabled', context.guild.id))
 
         guild_id = context.guild.id
-
-        # Check the arguments were all supplied and get a dict list of them and their values, after any prompts
-        args = await self.check_arguments(context, question=question)
-        if not args:
-            return
-
-        # Overwrite variable from check_arguments()
-        question = args['question']
 
         # Create array of possible answers to choose from
         answers = []
@@ -50,18 +42,8 @@ class EightBall(commands.Cog, CommandWrapper):
         answer = random.choice(answers)
 
         # Send the message
-        await context.send( context.message.author.mention + ', ' + format(answer) )
+        await context.send( context.author.mention + ', ' + format(answer) )
 
-    # @_8ball.error
-    # async def _8ball_error(self, context, error):
-    #     """
-    #
-    #     :param context:
-    #     :param error:
-    #     :return:
-    #     """
-    #     if not isinstance(error, discord.ext.commands.errors.NoPrivateMessage):
-    #         print(error)
 
 def setup(bot):
     bot.add_cog(EightBall(bot))
